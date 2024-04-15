@@ -20,15 +20,15 @@ def logistic_transformation(x):
 
 
 class Particle:
-    def __init__(self, tour):
+    def __init__(self, tour, inertia_weight=0.01, cognitive_param=0.01, social_param=0.01):
         self.tour = tour[:]
         self.velocity_vector = []  # Initialise empty, to be populated later
         self.p_best_tour = tour[:]  # Personal best tour initially same as current tour
         self.p_best_distance = float('inf')  # Initialise personal best distance as infinity
         # parameters
-        self.inertia_weight = 0.01
-        self.cognitive_param = 0.01
-        self.social_param = 0.01
+        self.inertia_weight = inertia_weight
+        self.cognitive_param = cognitive_param
+        self.social_param = social_param
 
     def initial_velocity(self):
         self.velocity_vector = [random.uniform(0, 1) for _ in range(len(self.tour))]
@@ -40,18 +40,18 @@ class Particle:
         permuted_indices = list(permutations(swap_indices))
 
         # Evaluate the tour distance for each permutation
-        best_tour = self.tour[:]  # Initialize with the current tour
+        best_tour = self.tour[:]
         best_distance = calculate_tour_length(best_tour)
 
         for indices in permuted_indices:
-            # Create a copy of the current tour
+            # Copy the current tour
             new_tour = best_tour[:]
-            # Perform city swaps based on permutation
+            # Swap the cities based on permutation
             for i, j in zip(indices[:-1], indices[1:]):
                 new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
-            # Calculate the new tour distance
+            # Calculate the new distance of a tour
             new_distance = calculate_tour_length(new_tour)
-            # Update the best tour and distance if needed
+            # Update the best tour and distance if it is better
             if new_distance < best_distance:
                 best_tour = new_tour
                 best_distance = new_distance
@@ -64,8 +64,10 @@ class Particle:
         updated_velocity = []
 
         for i in range(len(self.tour)):
-            cognitive_part = random.random() * self.cognitive_param * calculate_distance(p_best_tour[i], self.tour[i])
-            social_part = random.random() * self.social_param * calculate_distance(g_best_tour[i], self.tour[i])
+            # c1 - cognitive coefficient
+            cognitive_part = random.random() * self.cognitive_param * calculate_distance(p_best_tour[i], self.tour[i-1])
+            # c2 - social coefficient
+            social_part = random.random() * self.social_param * calculate_distance(g_best_tour[i], self.tour[i-1])
             inertia_part = self.inertia_weight * self.velocity_vector[i]
 
             velocity = cognitive_part + social_part + inertia_part
@@ -75,7 +77,8 @@ class Particle:
             elif velocity < 1:
                 updated_velocity.append(0)
             else:
-                updated_velocity.append(random.uniform(0,1))
+                updated_velocity.append(random.uniform(0, 1))
+            # print(cognitive_part, social_part, inertia_part)
 
         self.velocity_vector = updated_velocity
 

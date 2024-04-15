@@ -1,12 +1,13 @@
 from random import shuffle
 from Particle import Particle as TSPParticle, calculate_tour_length  # Renamed the Particle class
+import app_gui as app_gui
 
 
 class TSP_Solver:
-    def __init__(self):
+    def __init__(self, population_size=20, num_iterations=10):
         self.cities_positions = []
-        self.population_size = 3
-        self.num_iterations = 5
+        self.population_size = population_size
+        self.num_iterations = num_iterations
         self.population = None
         self.tour = []
         self.best_g_tour = None
@@ -38,8 +39,8 @@ class TSP_Solver:
             population.append(particle)
         return population
 
-    def check_stopping_condition(self, previous_best_distance, stopping_margin):
-        if abs(self.best_tour_distance - previous_best_distance) < stopping_margin:
+    def check_stopping_condition(self, previous_best_distances, stopping_margin):
+        if all(abs(self.best_tour_distance - distance) <= stopping_margin for distance in previous_best_distances):
             print("Stopping condition reached: Convergence achieved.")
             print(f"Best tour: {self.best_g_tour}")
             return True
@@ -51,12 +52,14 @@ class TSP_Solver:
         self.best_g_tour = self.generate_initial_tour()
         self.best_tour_distance = float('inf')
         stopping_margin = 0.0000000001
+        previous_best_distances = [float('inf')] * 2
 
         for particle in self.population:
             particle.initial_velocity()
 
         for iteration in range(self.num_iterations):
-            previous_best_distance = self.best_tour_distance
+            previous_best_distances.pop(0)
+            previous_best_distances.append(self.best_tour_distance)
             for particle in self.population:
                 current_tour_distance = calculate_tour_length(particle.tour)
 
@@ -67,7 +70,7 @@ class TSP_Solver:
                 particle.update_velocity(self.best_g_tour, particle.p_best_tour)
                 particle.update_tour()
 
-                if self.check_stopping_condition(previous_best_distance, stopping_margin):
+                if self.check_stopping_condition(previous_best_distances, stopping_margin):
                     return self.best_g_tour
             print(f"Iteration {iteration + 1}: Best tour distance = {self.best_tour_distance}")
             print(f"Best tour: {self.best_g_tour}")
@@ -77,5 +80,6 @@ if __name__ == '__main__':
     tsp_solver = TSP_Solver()
     tsp_solver.read_cities('csv_cities/difficulty_5.csv')
     tsp_solver.generate_initial_tour()
-    tsp_solver.run()
+    # tsp_solver.run()
+    app_gui.run_gui()
 

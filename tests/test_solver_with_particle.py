@@ -14,7 +14,5 @@ class IntegrationTest(unittest.TestCase):
         self.tsp_solver.generate_initial_tour()
         self.tsp_solver.run()
 
-    # Add more integration tests as needed
-
 if __name__ == '__main__':
     unittest.main()
