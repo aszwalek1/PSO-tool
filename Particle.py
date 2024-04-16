@@ -70,11 +70,13 @@ class Particle:
 
             velocity = cognitive_part + social_part + inertia_part
 
-            if velocity > 4:
+            # thresholds are problem specific
+            thresholds = {5: 4, 10: 150, 15: 250, 20: 280}
+            threshold = thresholds.get(len(self.tour), 200)
+            if velocity > threshold:
                 binary_velocity = 1
             else:
                 binary_velocity = 0
-
             updated_velocity.append(binary_velocity)
 
         self.velocity_vector = updated_velocity
