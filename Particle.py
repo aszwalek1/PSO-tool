@@ -4,19 +4,17 @@ import numpy as np
 from itertools import permutations
 
 
+# calculates distance between two given points
 def calculate_distance(city1, city2):
     return math.sqrt((city1[0] - city2[0]) ** 2 + (city1[1] - city2[1]) ** 2)
 
 
+# calculates a sum of distances between cities in a tour
 def calculate_tour_length(cities_positions):
     cities_positions = np.array(cities_positions)
     distances = np.linalg.norm(cities_positions - np.roll(cities_positions, -1, axis=0), axis=1)
     total_distance = np.sum(distances)
     return total_distance
-
-
-def logistic_transformation(x):
-    return 1 / (1 + np.exp(-x))
 
 
 class Particle:
