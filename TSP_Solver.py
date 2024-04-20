@@ -85,6 +85,5 @@ class TSP_Solver:
 if __name__ == '__main__':
     tsp_solver = TSP_Solver()
     tsp_solver.read_cities('csv_cities/difficulty_20.csv')
-    tsp_solver.generate_initial_tour()
     app_gui.run_gui()
 
