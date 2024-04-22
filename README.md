@@ -6,11 +6,23 @@ Follow the steps to install and run the tool:
 2. Clone the repository on your device:
    2.1 Open Git Bash
    2.1 Change the current working directory to the location where you want to copy the project
-   2.2 Use `git clone https://github.com/aszwalek1/PSO-tool.git` to clone the project
-3. Open Anaconda Prompt and run `conda env update -f environment_COM3524.yml`
-4. In the same Anaconda Prompt run `conda activate environment_COM3524`
-5. Navigate to the location of the project
-6. Run `python TSP_Solver.py` to start the tool
+   2.2 Use the following command to clone the project:
+   ```
+   git clone https://github.com/aszwalek1/PSO-tool.git
+   ``` 
+4. Open Anaconda Prompt and run:
+   ```
+   conda env update -f environment_COM3524.yml
+   ```
+6. In the same Anaconda Prompt run:
+    ```
+   conda activate COM3524
+    ```
+8. Navigate to the location of the project
+9. To start the tool run:
+     ```
+   python TSP_Solver.py
+     ```
 
 ## How to use the tool
 The tool is divided into 4 parts.
