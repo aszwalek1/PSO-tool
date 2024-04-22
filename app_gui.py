@@ -145,7 +145,7 @@ def run_gui():
         append_output(cmd_output)
 
         # show the current tour in frame3
-        show_current_route(frame3, tsp_solver.best_g_tour)
+        show_current_route(frame3, tsp_solver.g_best_tour)
 
     run_button = tk.Button(frame1, text="Run", command=run_pso, width=10, height=1, font=("Arial"))
     run_button.grid(row=7, column=0, columnspan=2, pady=4)
