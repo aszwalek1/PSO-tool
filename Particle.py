@@ -32,10 +32,7 @@ class Particle:
         self.velocity_vector = [random.uniform(0, 1) for _ in range(len(self.tour))]
 
     def update_tour(self):
-        swap_indices = []
-        for i, bit in enumerate(self.velocity_vector):
-            if bit == 1:
-                swap_indices.append(i)
+        swap_indices = [i for i, bit in enumerate(self.velocity_vector) if bit == 1]
 
         # Copy of the current tour
         new_tour = self.tour[:]
@@ -68,9 +65,10 @@ class Particle:
 
             velocity = cognitive_part + social_part + inertia_part
 
-            # thresholds are problem specific
+            # Thresholds are problem specific
             thresholds = {5: 4, 10: 150, 15: 250, 20: 280}
             threshold = thresholds.get(len(self.tour), 200)
+            # Translate velocity to binary values
             if velocity > threshold:
                 binary_velocity = 1
             else:
@@ -78,5 +76,4 @@ class Particle:
             updated_velocity.append(binary_velocity)
 
         self.velocity_vector = updated_velocity
-
 

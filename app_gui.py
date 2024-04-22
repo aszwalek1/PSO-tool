@@ -27,20 +27,22 @@ def run_gui():
     root.geometry("1000x600")
     menubar = tk.Menu(root)
 
+    # Create frames
     frame1 = tk.Frame(root, width=480, height=280)
     frame2 = tk.Frame(root, width=480, height=280)
     frame3 = tk.Frame(root, width=480, height=280)
     frame4 = tk.Frame(root, width=480, height=280)
 
-    # Pack frames into the window (use grid or pack as per your preference)
+    # Put frames into the window
     frame1.grid(row=0, column=0, padx=10, pady=10)
     frame2.grid(row=0, column=1, padx=10, pady=10)
     frame3.grid(row=1, column=0, padx=10, pady=10)
     frame4.grid(row=1, column=1, padx=10, pady=10)
 
+    # Create an instance of TSP Solver
     tsp_solver = TSP_Solver()
 
-    # FRAME 1
+    #-------------------------- FRAME 1 --------------------------
     label1 = tk.Label(frame1, text="Change parameters", font=("Arial", 16))
     label1.grid(row=0, column=0, columnspan=2)
 
@@ -148,7 +150,7 @@ def run_gui():
     run_button = tk.Button(frame1, text="Run", command=run_pso, width=10, height=1, font=("Arial"))
     run_button.grid(row=7, column=0, columnspan=2, pady=4)
 
-    # FRAME 2
+    # -------------------------- FRAME 2 --------------------------
     label_output_title = tk.Label(frame2, text="Command Line Output", font=("Arial", 12))
     label_output_title.grid(row=0, column=0, padx=10, pady=5)
 
@@ -163,7 +165,7 @@ def run_gui():
     output_box.grid(row=1, column=0, padx=10, pady=10)
     output_box.config(state=tk.DISABLED)
 
-    # FRAME 3
+    # -------------------------- FRAME 3 --------------------------
     def show_current_route(frame, best_tour):
         canvas_width = 480
         canvas_height = 280
@@ -221,7 +223,7 @@ def run_gui():
         canvas.create_text(canvas_width / 2, 10, text="Current Solution", font=("Arial", 14), anchor=tk.N)
         canvas.pack()
 
-    # FRAME 4
+    # -------------------------- FRAME 4 --------------------------
     def show_optimal_route(frame, difficulty):
         optimal_route = optimal_routes[difficulty]
         canvas_width = 480

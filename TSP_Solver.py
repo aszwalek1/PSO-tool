@@ -1,5 +1,5 @@
 from random import shuffle
-from Particle import Particle as Particle, calculate_tour_length  # Renamed the Particle class
+from Particle import Particle as Particle, calculate_tour_length
 import app_gui as app_gui
 
 
@@ -21,26 +21,21 @@ class TSP_Solver:
                 self.cities_positions.append((x, y))
         return self.cities_positions
 
-    # generate an initial tour for each particle
+    # Generate an initial tour for each particle
     def generate_initial_tour(self):
-        for _ in range(self.population_size):
-            tour = self.cities_positions[:]
+        tours = [self.cities_positions[:] for _ in range(self.population_size)]
+        for tour in tours:
             shuffle(tour)
             self.tour = tour
         return self.tour
 
-    # initialise a population of particles
+    # Initialise a population of particles
     def initialise_population(self):
-        population = []
-        for _ in range(self.population_size):
-            initial_tours = self.generate_initial_tour()
-            particle = Particle(initial_tours)
-            population.append(particle)
-        return population
+        return [Particle(self.generate_initial_tour()) for _ in range(self.population_size)]
 
-    # check if there is changed compared to a number of previous iterations
+    # Check if there is changed compared to a number of previous iterations
     def check_stopping_condition(self, previous_best_distances, stopping_margin, number_of_iterations_for_stopping):
-        # check if the number of previous distances is at least as large as the number
+        # Check if the number of previous distances is at least as large as the number
         # of iterations specified for stopping condition
         # and check if the new distance is within the stopping margin to the previous best distance
         if len(previous_best_distances) >= number_of_iterations_for_stopping and \
@@ -53,22 +48,26 @@ class TSP_Solver:
     def run(self):
         # Initialise population
         self.population = self.initialise_population()
+        # Initialise best global tour
         self.best_g_tour = self.generate_initial_tour()
+        # Initialise best tour distance
         self.best_tour_distance = float('inf')
+        # Margin for stopping condition
         stopping_margin = 0.0000000001
-        # how many previous iterations to compare for stopping criterion
-        number_of_iterations_for_stopping = 50
-        previous_best_distances = [float('inf')] * number_of_iterations_for_stopping
+        # How many previous iterations to compare for stopping criterion
+        num_of_iterations_for_stop = 50
+        previous_best_distances = [self.best_tour_distance] * num_of_iterations_for_stop
 
         for particle in self.population:
             particle.initial_velocity()
 
         for iteration in range(self.num_iterations):
+            # Update previous best distances
             previous_best_distances.pop(0)
             previous_best_distances.append(self.best_tour_distance)
             for particle in self.population:
                 current_tour_distance = calculate_tour_length(particle.tour)
-
+                # If the current tour is better than the best global tour than replace it
                 if current_tour_distance < self.best_tour_distance:
                     self.best_tour_distance = current_tour_distance
                     self.best_g_tour = particle.tour
@@ -76,7 +75,7 @@ class TSP_Solver:
                 particle.update_velocity(self.best_g_tour, particle.p_best_tour)
                 particle.update_tour()
 
-                if self.check_stopping_condition(previous_best_distances, stopping_margin, number_of_iterations_for_stopping):
+                if self.check_stopping_condition(previous_best_distances, stopping_margin, num_of_iterations_for_stop):
                     return self.best_g_tour
             print(f"Iteration {iteration + 1}: Best tour distance = {self.best_tour_distance}")
             print(f"Best tour: {self.best_g_tour}")
