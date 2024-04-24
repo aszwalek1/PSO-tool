@@ -74,7 +74,6 @@ class Particle:
             else:
                 binary_velocity = 0
             updated_velocity.append(binary_velocity)
-            print(self.velocity_vector)
 
         self.velocity_vector = updated_velocity
 
