@@ -1,10 +1,13 @@
-import tkinter as tk
 import sys
+import time
+import tkinter as tk
 from io import StringIO
 from tkinter import messagebox
+
 from PIL import ImageTk, Image, ImageDraw
-from TSP_Solver import TSP_Solver
+
 from Particle import Particle
+from TSP_Solver import TSP_Solver
 
 cmd_output = ""
 optimal_routes = {
@@ -14,6 +17,13 @@ optimal_routes = {
            596, 891, 640, 826, 580, 689, 341, 666],
     "20": [157, 282, 142, 317, 145, 431, 239, 644, 336, 628, 370, 871, 352, 888, 521, 961, 945, 918, 993, 931, 965, 619,
            886, 715, 844, 698, 559, 747, 590, 657, 535, 456, 706, 257, 419, 167, 360, 314, 245, 409]
+}
+
+best_distances = {
+    "5":  1877.3563,
+    "10": 2655.0572,
+    "15": 3095.7532,
+    "20": 3514.2509
 }
 
 
@@ -42,7 +52,7 @@ def run_gui():
     # Create an instance of TSP Solver
     tsp_solver = TSP_Solver()
 
-    #-------------------------- FRAME 1 --------------------------
+    # -------------------------- FRAME 1 --------------------------
     label1 = tk.Label(frame1, text="Change parameters", font=("Arial", 16))
     label1.grid(row=0, column=0, columnspan=2)
 
@@ -51,17 +61,17 @@ def run_gui():
     label_difficulty.grid(row=1, column=0, sticky=tk.E)
 
     options = ["5", "10", "15", "20"]
-    var = tk.StringVar(frame1)
-    var.set(options[0])
-    dropdown = tk.OptionMenu(frame1, var, *options)
+    selected_difficulty = tk.StringVar(frame1)
+    selected_difficulty.set(options[0])
+    dropdown = tk.OptionMenu(frame1, selected_difficulty, *options)
     dropdown.grid(row=1, column=1, sticky=tk.W)
 
     def read_cities(*args):
-        difficulty = var.get()
+        difficulty = selected_difficulty.get()
         filepath = f"csv_cities/difficulty_{difficulty}.csv"
         tsp_solver.read_cities(filepath)
 
-    var.trace('w', read_cities)
+    selected_difficulty.trace('w', read_cities)
 
     # ---------Number of iterations-------------
     label_iterations = tk.Label(frame1, text="Number of iterations", font=("Arial", 12))
@@ -88,7 +98,7 @@ def run_gui():
     # Field for entering the inertia weight
     enter_inertia = tk.Scale(frame1, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL)
     enter_inertia.grid(row=4, column=1, sticky=tk.W)
-    enter_inertia.set(0.01)
+    enter_inertia.set(0.5)  # default value
 
     # ----------Social parameter----------------
     label_social = tk.Label(frame1, text="Social parameter:", font=("Arial", 12))
@@ -97,7 +107,7 @@ def run_gui():
     # Field for entering the social parameter
     enter_social = tk.Scale(frame1, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL)
     enter_social.grid(row=5, column=1, sticky=tk.W)
-    enter_social.set(0.01)
+    enter_social.set(0.5)  # default value
 
     # ----------Cognitive parameter----------------
     label_cognitive = tk.Label(frame1, text="Cognitive parameter:", font=("Arial", 12))
@@ -106,11 +116,14 @@ def run_gui():
     # Field for entering the cognitive parameter
     enter_cognitive = tk.Scale(frame1, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL)
     enter_cognitive.grid(row=6, column=1, sticky=tk.W)
-    enter_cognitive.set(0.01)
+    enter_cognitive.set(0.5)  # default value
 
     # -----------Run the algorithm-----------------
+    runtime = 0
+
     def run_pso():
-        # clear the print messages from previous run
+        global runtime
+        # clear the print messages from the previous run
         output_box.config(state=tk.NORMAL)
         output_box.delete('1.0', tk.END)
         output_box.config(state=tk.DISABLED)
@@ -123,31 +136,48 @@ def run_gui():
         social_param = enter_social.get()
         iterations = int(enter_iterations.get())
         population_size = int(enter_population.get())
-        difficulty = var.get()
+        difficulty = selected_difficulty.get()
         filepath = f"csv_cities/difficulty_{difficulty}.csv"
 
-        print(f"Inertia weight: {inertia_weight}")
-        print(f"Cognitive parameter: {cognitive_param}")
-        print(f"Social parameter: {social_param}")
-        print(f"Iterations: {iterations}")
-        print(f"Population size: {population_size}")
-        print(f"Difficulty: {difficulty}")
+        output_text = f"Inertia weight: {inertia_weight}\n"
+        output_text += f"Cognitive parameter: {cognitive_param}\n"
+        output_text += f"Social parameter: {social_param}\n"
+        output_text += f"Iterations: {iterations}\n"
+        output_text += f"Population size: {population_size}\n"
+        output_text += f"Difficulty: {difficulty}\n\n"
 
-        tsp_solver = TSP_Solver(population_size, iterations)
-        tsp_solver.read_cities(filepath)
-        pso_solver = Particle(tsp_solver.cities_positions, inertia_weight, cognitive_param, social_param)
-        print("Running PSO...")
-        tsp_solver.run()
+        tsp_solver_instance = TSP_Solver(population_size, iterations)
+        tsp_solver_instance.read_cities(filepath)
 
-        cmd_output = sys.stdout.getvalue()
+        start_time = time.time()  # Start the timer
+
+        pso_solver = Particle(tsp_solver_instance.cities_positions, inertia_weight, cognitive_param, social_param)
+        output_text += "Running PSO...\n"
+        tsp_solver_instance.run()
+
+        end_time = time.time()  # End the timer
+        runtime = end_time - start_time  # Calculate the runtime
+
+        # Add the runtime information to the output text
+        output_text += f"Runtime: {runtime} seconds\n"
+
+        # Append the output text to the output box
+        append_output(output_text)
+
+        cmd_out = sys.stdout.getvalue()
         sys.stdout = sys.__stdout__  # Reset stdout
         sys.stderr = sys.__stderr__
-        append_output(cmd_output)
 
-        # show the current tour in frame3
-        show_current_route(frame3, tsp_solver.g_best_tour)
+        # Append any other command output to the output box
+        append_output(cmd_out)
 
-    run_button = tk.Button(frame1, text="Run", command=run_pso, width=10, height=1, font=("Arial"))
+        # Show the current tour in frame3
+        show_current_route(frame3, tsp_solver_instance.g_best_tour)
+
+        # Update the runtime label with the calculated runtime
+        runtime_label.config(text=f"Runtime: {runtime:.4f} seconds")
+
+    run_button = tk.Button(frame1, text="Run", command=run_pso, width=10, height=1, font="Arial")
     run_button.grid(row=7, column=0, columnspan=2, pady=4)
 
     # -------------------------- FRAME 2 --------------------------
@@ -164,6 +194,22 @@ def run_gui():
     output_box = tk.Text(frame2, width=50, height=15)
     output_box.grid(row=1, column=0, padx=10, pady=10)
     output_box.config(state=tk.DISABLED)
+
+    runtime_label = tk.Label(frame2, text="", font=("Arial", 11))
+    runtime_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.E)
+
+    best_distance_label = tk.Label(frame2, text="", font=("Arial", 11))
+    best_distance_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.W)
+
+    def update_best_distance(*args):
+        difficulty = selected_difficulty.get()
+        best_distance_label.config(text=f"Optimal Distance: {best_distances[difficulty]}")
+
+    # Apply trace to the selected_difficulty variable
+    selected_difficulty.trace('w', update_best_distance)
+
+    # Initial update
+    update_best_distance()
 
     # -------------------------- FRAME 3 --------------------------
     def show_current_route(frame, best_tour):
@@ -281,7 +327,7 @@ def run_gui():
 
     show_optimal_route(frame4, options[0])
 
-    var.trace('w', lambda *args: show_optimal_route(frame4, var.get()))
+    selected_difficulty.trace('w', lambda *args: show_optimal_route(frame4, selected_difficulty.get()))
 
     # Create a menu button called "About"
     about_menu = tk.Menu(menubar, tearoff=0)

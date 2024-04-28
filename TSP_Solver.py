@@ -1,10 +1,12 @@
+import time
 from random import shuffle
-from Particle import Particle as Particle, calculate_tour_length
+
 import app_gui as app_gui
+from Particle import Particle as Particle, calculate_tour_length
 
 
 class TSP_Solver:
-    def __init__(self, population_size=120, num_iterations=500):
+    def __init__(self, population_size=500, num_iterations=500):
         self.cities_positions = []
         self.population_size = population_size
         self.num_iterations = num_iterations
@@ -42,6 +44,7 @@ class TSP_Solver:
                 all(abs(self.g_best_distance - distance) <= stopping_margin for distance in previous_best_distances):
             print("Stopping condition reached: Convergence achieved.")
             print(f"Best tour: {self.g_best_tour}")
+            print(f"Best distance: {self.g_best_distance}")
             return True
         return False
 
@@ -60,7 +63,7 @@ class TSP_Solver:
 
         for particle in self.population:
             particle.initial_velocity()
-
+        start_time = time.time()
         for iteration in range(self.num_iterations):
             # Update previous best distances
             previous_best_distances.pop(0)
@@ -79,6 +82,7 @@ class TSP_Solver:
                     return self.g_best_tour
             print(f"Iteration {iteration + 1}: Best tour distance = {self.g_best_distance}")
             print(f"Best tour: {self.g_best_tour}")
+            print(f"Best distance: {self.g_best_distance}")
 
 
 if __name__ == '__main__':

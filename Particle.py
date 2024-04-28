@@ -1,15 +1,15 @@
-import random
 import math
+import random
+
 import numpy as np
-from itertools import permutations
 
 
-# calculates distance between two given points
+# Calculate distance between two given points
 def calculate_distance(city1, city2):
     return math.sqrt((city1[0] - city2[0]) ** 2 + (city1[1] - city2[1]) ** 2)
 
 
-# calculates a sum of distances between cities in a tour
+# Calculate a sum of distances between cities in a tour
 def calculate_tour_length(cities_positions):
     cities_positions = np.array(cities_positions)
     distances = np.linalg.norm(cities_positions - np.roll(cities_positions, -1, axis=0), axis=1)
@@ -18,7 +18,7 @@ def calculate_tour_length(cities_positions):
 
 
 class Particle:
-    def __init__(self, tour, inertia_weight=0.7, cognitive_param=0.5, social_param=0.5):
+    def __init__(self, tour, inertia_weight=0.5, cognitive_param=0.5, social_param=0.5):
         self.tour = tour[:]
         self.velocity_vector = []  # Initialise empty velocity vector
         self.p_best_tour = tour[:]  # Personal best tour initially same as current tour
@@ -57,23 +57,21 @@ class Particle:
 
         for i in range(len(self.tour)):
             # c1 - cognitive coefficient
-            cognitive_part = random.random() * self.cognitive_param * calculate_distance(p_best_tour[i],
-                                                                                         self.tour[i - 1])
+            # Needs to be divided to scale down to range around (0, 1)
+            cognitive_part = random.random() * self.cognitive_param * (calculate_distance(p_best_tour[i],
+                                                                                          self.tour[i - 1]) / 1000)
             # c2 - social coefficient
-            social_part = random.random() * self.social_param * calculate_distance(g_best_tour[i], self.tour[i - 1])
-            inertia_part = self.inertia_weight * self.velocity_vector[i]
+            social_part = random.random() * self.social_param * (calculate_distance(g_best_tour[i],
+                                                                                    self.tour[i - 1]) / 1000)
 
-            velocity = cognitive_part + social_part + inertia_part
+            velocity = cognitive_part + social_part + self.inertia_weight
 
-            # Thresholds are problem specific
-            thresholds = {5: 186, 10: 150, 15: 250, 20: 280}
-            threshold = thresholds.get(len(self.tour), 200)
             # Translate velocity to binary values
-            if velocity > threshold:
+            # The threshold obtained through experimentation
+            if velocity > 0.75:
                 binary_velocity = 1
             else:
                 binary_velocity = 0
             updated_velocity.append(binary_velocity)
 
         self.velocity_vector = updated_velocity
-
