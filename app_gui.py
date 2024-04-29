@@ -20,7 +20,7 @@ optimal_routes = {
 }
 
 best_distances = {
-    "5":  1877.3563,
+    "5": 1877.3563,
     "10": 2655.0572,
     "15": 3095.7532,
     "20": 3514.2509
@@ -28,7 +28,17 @@ best_distances = {
 
 
 def about():
-    messagebox.showinfo("About", "This is a tool for visualising how PSO solves the TSP")
+    messagebox.showinfo("About", "This is a tool for visualising how PSO solves the TSP"
+                                 "developed as part of an undergraduate dissertation project done by Alicja Szwalek")
+
+
+def instructions():
+    messagebox.showinfo("Instructions", "To run the tool press the 'Run' button. "
+                                        "The output of the command line will be shown in the right-top window after"
+                                        "the algorithm finishes running. The optimal distance is the length of the"
+                                        "shortest possible route, which is shown in the right-bottom window. "
+                                        "The best route obtained by the algorithm will be shown in the left-bottom"
+                                        "window after the algorithm finishes running.")
 
 
 def run_gui():
@@ -332,6 +342,7 @@ def run_gui():
     # Create a menu button called "About"
     about_menu = tk.Menu(menubar, tearoff=0)
     about_menu.add_command(label="About", command=about)
+    about_menu.add_command(label="Instructions", command=instructions)
 
     # Add the "About" menu to the menu
     menubar.add_cascade(label="About", menu=about_menu)

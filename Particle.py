@@ -28,27 +28,63 @@ class Particle:
         self.cognitive_param = cognitive_param
         self.social_param = social_param
 
+    # Initialise  velocity as a vector with binary values assigned randomly
     def initial_velocity(self):
         self.velocity_vector = [1 if random.random() < 0.5 else 0 for _ in range(len(self.tour))]
 
+    # ----------------- VERSION 1 - all swaps to compute 1 new tour ----------------
+    # def update_tour(self):
+    #     swap_indices = [i for i, bit in enumerate(self.velocity_vector) if bit == 1]
+    #
+    #     # Copy of the current tour
+    #     new_tour = self.tour[:]
+    #
+    #     # Swap the cities based on the velocity vector
+    #     for i, j in zip(swap_indices[:-1], swap_indices[1:]):
+    #         new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
+    #
+    #     # Calculate the length of the new tour after all the swaps have been performed
+    #     new_distance = calculate_tour_length(new_tour)
+    #
+    #     # Update the personal best tour and distance if it is better
+    #     if new_distance < self.p_best_distance:
+    #         self.p_best_tour = new_tour
+    #         self.p_best_distance = new_distance
+    #
+    #     self.tour = new_tour
+    #
+    #     return self.p_best_tour
+
+    # ---------------  VERSION 2 - compute all possible swaps ------------------------
     def update_tour(self):
         swap_indices = [i for i, bit in enumerate(self.velocity_vector) if bit == 1]
 
         # Copy of the current tour
         new_tour = self.tour[:]
+        best_tour = self.p_best_tour  # Initialize best_tour with personal best tour
+        best_distance = self.p_best_distance  # Initialize best_distance with personal best distance
 
-        # Swap the cities based on the velocity vector
+        # Perform all possible swaps of the cities based on the velocity vector
         for i, j in zip(swap_indices[:-1], swap_indices[1:]):
-            new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
+            # Create a copy of the tour for this swap
+            current_tour = new_tour[:]
+            current_tour[i], current_tour[j] = current_tour[j], current_tour[i]
 
-        new_distance = calculate_tour_length(new_tour)
+            # Calculate the distance of the current tour
+            current_distance = calculate_tour_length(current_tour)
 
-        # Update the personal best tour and distance if it is better
-        if new_distance < self.p_best_distance:
-            self.p_best_tour = new_tour
-            self.p_best_distance = new_distance
+            # Check if the current tour is better than the best tour found so far
+            if current_distance < self.p_best_distance:
+                best_tour = current_tour
+                best_distance = current_distance
 
-        self.tour = new_tour
+        # Update the personal best tour and distance if a better tour is found
+        if best_distance < self.p_best_distance:
+            self.p_best_tour = best_tour
+            self.p_best_distance = best_distance
+
+        # Update the tour with the best tour found
+        self.tour = best_tour
 
         return self.p_best_tour
 
@@ -60,6 +96,7 @@ class Particle:
             # Needs to be divided to scale down to range around (0, 1)
             cognitive_part = random.random() * self.cognitive_param * (calculate_distance(p_best_tour[i],
                                                                                           self.tour[i - 1]) / 1000)
+
             # c2 - social coefficient
             social_part = random.random() * self.social_param * (calculate_distance(g_best_tour[i],
                                                                                     self.tour[i - 1]) / 1000)
@@ -67,7 +104,6 @@ class Particle:
             velocity = cognitive_part + social_part + self.inertia_weight
 
             # Translate velocity to binary values
-            # The threshold obtained through experimentation
             if velocity > 0.75:
                 binary_velocity = 1
             else:
