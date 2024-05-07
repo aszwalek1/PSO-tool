@@ -32,7 +32,7 @@ class Particle:
     def initial_velocity(self):
         self.velocity_vector = [1 if random.random() < 0.5 else 0 for _ in range(len(self.tour))]
 
-    # ----------------- VERSION 1 - all swaps to compute 1 new tour ----------------
+    # ----------------- VERSION 1 - calculates tour length after all swaps are performed ----------------
     # def update_tour(self):
     #     swap_indices = [i for i, bit in enumerate(self.velocity_vector) if bit == 1]
     #
@@ -55,7 +55,7 @@ class Particle:
     #
     #     return self.p_best_tour
 
-    # ---------------  VERSION 2 - compute all possible swaps ------------------------
+    # ---------------  VERSION 2 - calculates length after each swap ------------------------
     def update_tour(self):
         swap_indices = [i for i, bit in enumerate(self.velocity_vector) if bit == 1]
 
@@ -64,9 +64,9 @@ class Particle:
         best_tour = self.p_best_tour  # Initialize best_tour with personal best tour
         best_distance = self.p_best_distance  # Initialize best_distance with personal best distance
 
-        # Perform all possible swaps of the cities based on the velocity vector
+        # Perform one swap at the time and compare the new tour with current best
         for i, j in zip(swap_indices[:-1], swap_indices[1:]):
-            # Create a copy of the tour for this swap
+            # Create a copy of the tour for each swap
             current_tour = new_tour[:]
             current_tour[i], current_tour[j] = current_tour[j], current_tour[i]
 

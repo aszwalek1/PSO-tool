@@ -21,7 +21,7 @@ Follow the steps to install and run the tool:
 8. Navigate to the location of the project
 9. To start the tool run:
      ```
-   python TSP_Solver.py
+   python app_gui.py
      ```
 
 ## How to use the tool

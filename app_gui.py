@@ -1,15 +1,19 @@
 import sys
 import time
 import tkinter as tk
+
 from io import StringIO
 from tkinter import messagebox
-
 from PIL import ImageTk, Image, ImageDraw
-
-from Particle import Particle
 from TSP_Solver import TSP_Solver
 
+"""This file implements the graphical user interface for a Binary Particle Swarm Optimisation Algorithm that is used 
+to solve the Travelling Salesman Problem. The GUI is composed of 4 frames, 1 for parameters, 1 for displaying the cmd 
+output, 1 for showing a graph of current solution and 1 for showing the graph of the optimal solution."""
+
+
 cmd_output = ""
+# Optimal routes and distances have been used from the GA teaching tool
 optimal_routes = {
     "5": [543, 317, 881, 179, 576, 579, 579, 782, 237, 609],
     "10": [647, 174, 608, 188, 267, 301, 262, 345, 427, 594, 192, 979, 441, 940, 729, 714, 650, 464, 897, 362],
@@ -26,25 +30,29 @@ best_distances = {
     "20": 3514.2509
 }
 
+# Pop-ups to be displayed after the user presses a button in the menu
+
 
 def about():
-    messagebox.showinfo("About", "This is a tool for visualising how PSO solves the TSP"
+    messagebox.showinfo("About", "This is a tool for visualising how PSO solves the TSP, "
                                  "developed as part of an undergraduate dissertation project done by Alicja Szwalek")
 
 
 def instructions():
     messagebox.showinfo("Instructions", "To run the tool press the 'Run' button. "
-                                        "The output of the command line will be shown in the right-top window after"
-                                        "the algorithm finishes running. The optimal distance is the length of the"
+                                        "The output of the command line will be shown in the right-top window after "
+                                        "the algorithm finishes running. This is automatically scrolled down to show "
+                                        "you the last iteration. "
+                                        "The optimal distance is the length of the "
                                         "shortest possible route, which is shown in the right-bottom window. "
-                                        "The best route obtained by the algorithm will be shown in the left-bottom"
-                                        "window after the algorithm finishes running.")
+                                        "The best route obtained by the algorithm will be shown in the left-bottom "
+                                        "window after the algorithm finishes running. ")
 
 
 def run_gui():
     root = tk.Tk()
     root.title("PSO Tool")
-    root.geometry("1000x600")
+    root.geometry("1000x650")
     menubar = tk.Menu(root)
 
     # Create frames
@@ -54,10 +62,10 @@ def run_gui():
     frame4 = tk.Frame(root, width=480, height=280)
 
     # Put frames into the window
-    frame1.grid(row=0, column=0, padx=10, pady=10)
-    frame2.grid(row=0, column=1, padx=10, pady=10)
+    frame1.grid(row=0, column=0, padx=0, pady=10)
+    frame2.grid(row=0, column=1, padx=0, pady=10)
     frame3.grid(row=1, column=0, padx=10, pady=10)
-    frame4.grid(row=1, column=1, padx=10, pady=10)
+    frame4.grid(row=1, column=1, padx=5, pady=10)
 
     # Create an instance of TSP Solver
     tsp_solver = TSP_Solver()
@@ -77,6 +85,9 @@ def run_gui():
     dropdown.grid(row=1, column=1, sticky=tk.W)
 
     def read_cities(*args):
+        """
+        Read cities from the csv_cities folder depending on the selected difficulty
+        """
         difficulty = selected_difficulty.get()
         filepath = f"csv_cities/difficulty_{difficulty}.csv"
         tsp_solver.read_cities(filepath)
@@ -111,7 +122,7 @@ def run_gui():
     enter_inertia.set(0.5)  # default value
 
     # ----------Social parameter----------------
-    label_social = tk.Label(frame1, text="Social parameter:", font=("Arial", 12))
+    label_social = tk.Label(frame1, text="Social coefficient:", font=("Arial", 12))
     label_social.grid(row=5, column=0, sticky=tk.E + tk.S)
 
     # Field for entering the social parameter
@@ -120,7 +131,7 @@ def run_gui():
     enter_social.set(0.5)  # default value
 
     # ----------Cognitive parameter----------------
-    label_cognitive = tk.Label(frame1, text="Cognitive parameter:", font=("Arial", 12))
+    label_cognitive = tk.Label(frame1, text="Cognitive coefficient:", font=("Arial", 12))
     label_cognitive.grid(row=6, column=0, sticky=tk.E + tk.S)
 
     # Field for entering the cognitive parameter
@@ -141,41 +152,27 @@ def run_gui():
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        inertia_weight = enter_inertia.get()
-        cognitive_param = enter_cognitive.get()
-        social_param = enter_social.get()
         iterations = int(enter_iterations.get())
         population_size = int(enter_population.get())
         difficulty = selected_difficulty.get()
         filepath = f"csv_cities/difficulty_{difficulty}.csv"
 
-        output_text = f"Inertia weight: {inertia_weight}\n"
-        output_text += f"Cognitive parameter: {cognitive_param}\n"
-        output_text += f"Social parameter: {social_param}\n"
-        output_text += f"Iterations: {iterations}\n"
-        output_text += f"Population size: {population_size}\n"
-        output_text += f"Difficulty: {difficulty}\n\n"
-
         tsp_solver_instance = TSP_Solver(population_size, iterations)
         tsp_solver_instance.read_cities(filepath)
 
         start_time = time.time()  # Start the timer
-
-        pso_solver = Particle(tsp_solver_instance.cities_positions, inertia_weight, cognitive_param, social_param)
-        output_text += "Running PSO...\n"
+        output_text = "Running PSO...\n"
         tsp_solver_instance.run()
 
         end_time = time.time()  # End the timer
         runtime = end_time - start_time  # Calculate the runtime
 
-        # Add the runtime information to the output text
-        output_text += f"Runtime: {runtime} seconds\n"
-
         # Append the output text to the output box
         append_output(output_text)
 
         cmd_out = sys.stdout.getvalue()
-        sys.stdout = sys.__stdout__  # Reset stdout
+        # Reset stdout
+        sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
 
         # Append any other command output to the output box
@@ -199,23 +196,27 @@ def run_gui():
         cmd_output += text + "\n"
         output_box.config(state=tk.NORMAL)
         output_box.insert(tk.END, text + "\n")
+        output_box.yview(tk.END)  # scroll to the bottom of the output box
         output_box.config(state=tk.DISABLED)
 
-    output_box = tk.Text(frame2, width=50, height=15)
+    output_box = tk.Text(frame2, width=59, height=15)
     output_box.grid(row=1, column=0, padx=10, pady=10)
     output_box.config(state=tk.DISABLED)
 
+    # Label for the runtime that gets updated later
     runtime_label = tk.Label(frame2, text="", font=("Arial", 11))
     runtime_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.E)
 
+    # Label for the best distance that gets updated later
     best_distance_label = tk.Label(frame2, text="", font=("Arial", 11))
     best_distance_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.W)
 
     def update_best_distance(*args):
         difficulty = selected_difficulty.get()
+        # Update the label
         best_distance_label.config(text=f"Optimal Distance: {best_distances[difficulty]}")
 
-    # Apply trace to the selected_difficulty variable
+    # Apply trace to the selected_difficulty
     selected_difficulty.trace('w', update_best_distance)
 
     # Initial update
@@ -339,7 +340,7 @@ def run_gui():
 
     selected_difficulty.trace('w', lambda *args: show_optimal_route(frame4, selected_difficulty.get()))
 
-    # Create a menu button called "About"
+    # Create the menu buttons
     about_menu = tk.Menu(menubar, tearoff=0)
     about_menu.add_command(label="About", command=about)
     about_menu.add_command(label="Instructions", command=instructions)
@@ -352,3 +353,10 @@ def run_gui():
 
     # Run the main loop
     root.mainloop()
+
+
+if __name__ == '__main__':
+    tsp_solver = TSP_Solver()
+    tsp_solver.read_cities('csv_cities/difficulty_20.csv')
+    run_gui()
+
